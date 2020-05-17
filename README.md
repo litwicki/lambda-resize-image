@@ -67,15 +67,26 @@ To deploy from your environment to Amazon AWS, you must:
 - AWS_SECRET_ACCESS_KEY - AWS Secret
 
 ## Local development
+First you'll need to install imagemagick locally, depending on which OS you use:
 
-1. `$ npm i -g serverless`
-2. `$ npm i`
-3. `$ brew install imagemagick`
-4. `$ serverless offline start`
+#### MAC OS
+    $ brew install imagemagick
+    $ brew install ghostscript
+
+#### LINUX
+    $ sudo apt-get install imagemagick
+
+#### WINDOWS
+You'll need to install the binary from [here](https://imagemagick.org/script/download.php) and follow the directions.
+
+### Install Serverless &amp; Packages
+    $ npm i -g serverless && npm i
+
+---
 
 Note that you will need to be into the root repository. The last command (4.) will spin up an [serverless-offline](https://github.com/dherault/serverless-offline) version of an API Gateway, that will simulate the real one. Once it is running, you can see all the requests on your command line.
 
-### Example request
+#### Example request
 
 `http://localhost:3000<YOUR_KEYNAME_TO_IMAGE>?width=<WIDTH>&height=<HEIGHT>`
 
