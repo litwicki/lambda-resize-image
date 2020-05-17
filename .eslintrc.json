@@ -1,0 +1,16 @@
+{
+  "extends": "prettier",
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "sourceType": "module"
+  },
+  "plugins": ["prettier"],
+  "rules": {
+    "prettier/prettier": "error",
+    "quotes": ["error", "single"]
+  }
+}

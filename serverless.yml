@@ -1,0 +1,79 @@
+# serverless.yml
+service: resizeS3image
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+
+custom:
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+    packager: 'npm'
+
+package:
+  include:
+    - src/**
+    - node_modules/**
+  exclude:
+    - .git/**
+    - .env
+    - env.yml
+    - docker-compose.yml
+    - Dockerfile
+    - LICENSE
+    - CHANGELOG.md
+    - CODE_OF_CONDUCT.md
+    - README.md
+    - package.json
+    - package-lock.json
+    - tests/**
+    - yarn.lock
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  region: us-west-2
+  stage: ${opt:stage,'dev'}
+  timeout: 5 # optional, in seconds, default is 6
+  environment:
+    BUCKET: ${file(env.yml):${self:provider.stage}.BUCKET}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - 's3:PutObjectAcl'
+        - 's3:PutObject'
+        - 's3:ListBucket'
+        - 's3:GetObject'
+      Resource: '*'
+
+functions:
+  handler:
+    handler: src/handler.imageprocess
+    name: resizeimage-${self:provider.stage}
+    memorySize: ${file(env.yml):${self:provider.stage}.MEMORY_SIZE}
+    timeout: ${file(env.yml):${self:provider.stage}.TIMEOUT}
+    reservedConcurrency: ${file(env.yml):${self:provider.stage}.TIMEOUT}
+    events:
+      - http:
+          path: /{key+}
+          method: get
+          integration: lambda-proxy
+          cors:
+            origins:
+              - ${file(env.yml):${self:provider.stage}.ORIGIN}
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+              - Access-Control-Allow-Headers
+              - Access-Control-Allow-Origin
+            allowCredentials: true
+          parameters:
+            paths:
+              key: true
+    environment:
+      BUCKET: ${file(env.yml):${self:provider.stage}.BUCKET}
