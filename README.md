@@ -61,10 +61,11 @@ To deploy from your environment to Amazon AWS, you must:
 
 - BUCKET - AWS S3 bucket. (required)
 
-### Environment variables for serverless
+### Configure Serverless
 
-- AWS_ACCESS_KEY_ID - AWS key
-- AWS_SECRET_ACCESS_KEY - AWS Secret
+You need to [configure serverless](https://www.serverless.com/framework/docs/providers/aws/guide/credentials/) with your credentials so you can deploy your stages.
+
+You will need your `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` regardless of which method you prefer.
 
 ## Local development
 First you'll need to install imagemagick locally, depending on which OS you use:
