@@ -26,6 +26,8 @@
         "jest": "^25.4.0",
         "lambda-tester": "^4.0.1",
         "prettier": "^2.0.5",
+        "serverless-apigw-binary": "^0.4.4",
+        "serverless-content-encoding": "^1.1.0",
         "serverless-offline": "^6.1.4",
         "serverless-webpack": "^5.3.1",
         "util": "^0.12.2",

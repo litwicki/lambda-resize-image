@@ -4,12 +4,22 @@ service: resizeS3image
 plugins:
   - serverless-webpack
   - serverless-offline
+  - serverless-content-encoding
+  - serverless-apigw-binary
 
 custom:
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules: true
     packager: 'npm'
+  contentEncoding:
+    minimumCompressionSize: 0 # Minimum body size required for compression in bytes
+  apigwBinary:
+    types:           #list of mime-types
+      - 'image/jpeg'
+      - 'image/png'
+      - 'image/gif'
+      - 'text/html'
 
 package:
   include:
