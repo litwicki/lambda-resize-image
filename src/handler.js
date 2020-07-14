@@ -18,13 +18,25 @@ const IMAGE_SIZES = [320, 640, 800, 1024, 1280, 1360, 1920, 2048, 2056, 2560, 34
  */
 
 export function imageprocess(event, context, callback) {
+
   const queryParameters = event.queryStringParameters || {};
   const imageKey = decodeURIComponent(event.pathParameters.key);
 
   if (!process.env.BUCKET) {
+    let message = 'Error: Set environment variables BUCKET.';
+    console.error(message);
     return callback(null, {
       statusCode: 404,
-      body: 'Error: Set environment variables BUCKET.',
+      body: message
+    });
+  }
+
+  if (!imageKey) {
+    let message = 'Error: Image not found.';
+    console.error(message);
+    return callback(null, {
+      statusCode: 404,
+      body: message
     });
   }
 
@@ -37,95 +49,63 @@ export function imageprocess(event, context, callback) {
       : parseInt(queryParameters.height),
   };
 
-  if (imageKey) {
-    if (!size.width && !size.height) {
-      S3.getObject({
-        Bucket: process.env.BUCKET,
-        Key: imageKey,
-      })
-        .promise()
-        .then((data) =>
-          sharp(data.Body).jpeg({ quality: 95, progressive: true }).toBuffer()
-        )
-        .then((buffer) => {
-          // generate a binary response with resized image
-          const response = {
-            statusCode: 200,
-            headers: {
-              'Content-Type': 'image/jpeg',
-              'Cache-Control': 'public, max-age=31536000',
-            },
-            body: buffer.toString('base64'),
-            isBase64Encoded: true,
-          };
-          return callback(null, response);
-        })
-        .catch((err) =>
-          callback(null, {
-            statusCode: err.statusCode || 404,
-            body: JSON.stringify(err),
-          })
-        );
-    } else {
+  const imageUrl = `${process.env.CDN_URL}/${generateS3Key(imageKey, size)}`;
 
-      if (!size.width || !IMAGE_SIZES.includes(size.width)) {
-        return callback(null, {
-          statusCode: 403,
-          body: 'Error: Invalid image size.',
-        });
-      }
+  if (!size.width && !size.height) {
 
-      S3.getObject({
-        Bucket: process.env.BUCKET,
-        Key: imageKey,
+    S3.getObject({ Bucket: process.env.BUCKET, Key: imageKey }).promise()
+      .then(() => context.succeed({
+        statusCode: '308',
+        headers: {
+          'location': imageUrl,
+          'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString()
+        },
+        body: '' //buffer.toString()
       })
-        .promise()
-        .then((data) =>
-          sharp(data.Body)
-            .resize({ width: size.width })
-            .jpeg({ quality: 95, progressive: true })
-            .toBuffer()
-        )
-        .then((buffer) => {
-          S3.putObject({
-            Body: buffer,
-            Bucket: process.env.BUCKET,
-            ContentType: 'image/jpeg',
-            CacheControl: 'max-age=31536000',
-            Key: generateS3Key(imageKey, size),
-            ACL: 'public-read',
-          })
-            .promise()
-            .catch((err) => {
-              return callback(null, {
-                statusCode: err.statusCode || 404,
-                body: JSON.stringify(err),
-              });
-            });
-          // generate a binary response with resized image
-          const response = {
-            statusCode: 200,
-            headers: {
-              'Content-Type': 'image/jpeg',
-              'Cache-Control': 'public, max-age=31536000',
-            },
-            body: buffer.toString('base64'),
-            isBase64Encoded: true,
-          };
-          console.log('response', response);
-          return callback(null, response);
-        })
-        .catch((err) =>
-          callback(null, {
-            statusCode: err.statusCode || 404,
-            body: JSON.stringify(err),
-          })
-        );
-    }
+      )
+      .catch((err) => context.fail(err))
+
   } else {
-    return callback(null, {
-      statusCode: 404,
-      body: 'Error: Image not found.',
-    });
+
+    if (!size.width || !IMAGE_SIZES.includes(size.width)) {
+      return callback(null, {
+        statusCode: 403,
+        body: 'Error: Invalid image size.',
+      });
+    }
+
+    S3.getObject({ Bucket: process.env.BUCKET, Key: imageKey }).promise()
+      .then((data) => sharp(data.Body)
+        .resize(size.width)
+        .toFormat('jpeg')
+        .toBuffer()
+      )
+      .then((data) => holdBuffer(data))
+      .then((buffer) => S3.putObject({
+        Body: buffer,
+        Bucket: process.env.BUCKET,
+        ContentType: 'image/jpeg',
+        Key: generateS3Key(imageKey, size),
+        ACL: 'public-read',
+        CacheControl: 'public, max-age=31536000'
+      }).promise()
+      )
+      .then(() => context.succeed({
+        statusCode: '308',
+        headers: {
+          'location': imageUrl,
+          'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString()
+        },
+        body: '' //buffer.toString()
+      })
+      )
+      .catch((err) => context.fail(err))
+
   }
+
+}
+
+var holdBuffer = function (data) {
+  let buffer = data;
+  return buffer;
 }

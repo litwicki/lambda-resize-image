@@ -57,7 +57,7 @@ You can also check if you have everything installed in the correct way:
 
 To deploy from your environment to Amazon AWS, you must:
 
-`$ serverless deploy --stage dev` or `$ serverless deploy --stage prod` for production configurations.
+    $ serverless deploy --stage {stage}
 
 ## Environment variables
 
@@ -86,6 +86,10 @@ You'll need to install the binary from [here](https://imagemagick.org/script/dow
     $ npm i -g serverless && npm i
 
 ---
+
+### Running locally
+
+    $ serverless offline start
 
 Note that you will need to be into the root repository. The last command (4.) will spin up an [serverless-offline](https://github.com/dherault/serverless-offline) version of an API Gateway, that will simulate the real one. Once it is running, you can see all the requests on your command line.
 
