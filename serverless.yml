@@ -63,10 +63,10 @@ provider:
 functions:
   handler:
     handler: src/handler.imageprocess
-    name: resizeimage-${self:provider.stage}
+    name: wallpc-resizeS3image-${self:provider.stage}
     memorySize: ${file(env.yml):${self:provider.stage}.MEMORY_SIZE}
     timeout: ${file(env.yml):${self:provider.stage}.TIMEOUT}
-    reservedConcurrency: ${file(env.yml):${self:provider.stage}.TIMEOUT}
+    reservedConcurrency: ${file(env.yml):${self:provider.stage}.RESERVED_CONCURRENCY}
     events:
       - http:
           path: /{key+}
@@ -84,6 +84,7 @@ functions:
               - X-Amz-User-Agent
               - Access-Control-Allow-Headers
               - Access-Control-Allow-Origin
+              - Access-Control-Allow-Credentials
             allowCredentials: true
           parameters:
             paths:
@@ -91,3 +92,4 @@ functions:
     environment:
       BUCKET: ${file(env.yml):${self:provider.stage}.BUCKET}
       CDN_URL: ${file(env.yml):${self:provider.stage}.CDN_URL}
+      URL: ${file(env.yml):${self:provider.stage}.URL}

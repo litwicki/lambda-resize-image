@@ -29,6 +29,7 @@ export function getImage(key) {
           statusCode: 301,
           headers: {
             Location: `${process.env.URL}/${key}`,
+            'Access-Control-Allow-Origin': '*'
           },
         });
       }
@@ -58,7 +59,8 @@ export function checkKeyExists(key, size) {
         resolve({
           statusCode: 301,
           headers: {
-            Location: `${process.env.URL}/${generateS3Key(key, size)}`,
+            Location: `${process.env.CDN_URL}/${generateS3Key(key, size)}`,
+            'Access-Control-Allow-Origin': '*'
           },
         });
       }
@@ -135,7 +137,8 @@ export function resizeImage(key, size) {
           resolve({
             statusCode: 301,
             headers: {
-              Location: `${process.env.URL}/${generateS3Key(key, size)}`,
+              Location: `${process.env.CDN_URL}/${generateS3Key(key, size)}`,
+              'Access-Control-Allow-Origin': '*'
             },
           });
         }

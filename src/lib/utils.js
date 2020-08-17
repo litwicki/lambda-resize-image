@@ -38,6 +38,7 @@ export function resizeCallback(error, contentType, newKey, tmpImageName) {
             statusCode: 301,
             headers: {
               Location: `${process.env.URL}/${newKey}`,
+              'Access-Control-Allow-Origin': '*'
             },
           });
         }

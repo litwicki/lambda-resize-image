@@ -22,6 +22,8 @@ export function imageprocess(event, context, callback) {
   const queryParameters = event.queryStringParameters || {};
   const imageKey = decodeURIComponent(event.pathParameters.key);
 
+  console.log('imageKey', imageKey);
+
   if (!process.env.BUCKET) {
     let message = 'Error: Set environment variables BUCKET.';
     console.error(message);
@@ -36,7 +38,11 @@ export function imageprocess(event, context, callback) {
     console.error(message);
     return callback(null, {
       statusCode: 404,
-      body: message
+      body: message,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
     });
   }
 
@@ -49,19 +55,21 @@ export function imageprocess(event, context, callback) {
       : parseInt(queryParameters.height),
   };
 
-  const imageUrl = `${process.env.CDN_URL}/${generateS3Key(imageKey, size)}`;
-
   if (!size.width && !size.height) {
 
+    const success = {
+      statusCode: '308',
+      headers: {
+        'location': `${process.env.URL}/${imageKey}`,
+        'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString(),
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      body: '' //buffer.toString()
+    };
+
     S3.getObject({ Bucket: process.env.BUCKET, Key: imageKey }).promise()
-      .then(() => context.succeed({
-        statusCode: '308',
-        headers: {
-          'location': imageUrl,
-          'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString()
-        },
-        body: '' //buffer.toString()
-      })
+      .then(() => context.succeed(success)
       )
       .catch((err) => context.fail(err))
 
@@ -71,6 +79,10 @@ export function imageprocess(event, context, callback) {
       return callback(null, {
         statusCode: 403,
         body: 'Error: Invalid image size.',
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
       });
     }
 
@@ -93,8 +105,10 @@ export function imageprocess(event, context, callback) {
       .then(() => context.succeed({
         statusCode: '308',
         headers: {
-          'location': imageUrl,
-          'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString()
+          'location': `${process.env.URL}/${generateS3Key(imageKey, size)}`,
+          'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString(),
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
         },
         body: '' //buffer.toString()
       })
