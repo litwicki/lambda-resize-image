@@ -38,7 +38,10 @@ export function resizeCallback(error, contentType, newKey, tmpImageName) {
             statusCode: 301,
             headers: {
               Location: `${process.env.URL}/${newKey}`,
-              'Access-Control-Allow-Origin': '*'
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
+              'Access-Control-Allow-Credentials': true,
+              'Access-Control-Allow-Methods': 'OPTIONS, GET',
             },
           });
         }

@@ -29,7 +29,10 @@ export function getImage(key) {
           statusCode: 301,
           headers: {
             Location: `${process.env.URL}/${key}`,
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
+            'Access-Control-Allow-Credentials': true,
+            'Access-Control-Allow-Methods': 'OPTIONS, GET',
           },
         });
       }
@@ -60,7 +63,10 @@ export function checkKeyExists(key, size) {
           statusCode: 301,
           headers: {
             Location: `${process.env.CDN_URL}/${generateS3Key(key, size)}`,
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
+            'Access-Control-Allow-Credentials': true,
+            'Access-Control-Allow-Methods': 'OPTIONS, GET',
           },
         });
       }
@@ -138,7 +144,8 @@ export function resizeImage(key, size) {
             statusCode: 301,
             headers: {
               Location: `${process.env.CDN_URL}/${generateS3Key(key, size)}`,
-              'Access-Control-Allow-Origin': '*'
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'OPTIONS, GET',
             },
           });
         }

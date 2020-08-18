@@ -41,7 +41,9 @@ export function imageprocess(event, context, callback) {
       body: message,
       headers: {
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
         'Access-Control-Allow-Credentials': true,
+        'Access-Control-Allow-Methods': 'OPTIONS, GET',
       },
     });
   }
@@ -63,7 +65,9 @@ export function imageprocess(event, context, callback) {
         'location': `${process.env.URL}/${imageKey}`,
         'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString(),
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
         'Access-Control-Allow-Credentials': true,
+        'Access-Control-Allow-Methods': 'OPTIONS, GET',
       },
       body: '' //buffer.toString()
     };
@@ -81,7 +85,9 @@ export function imageprocess(event, context, callback) {
         body: 'Error: Invalid image size.',
         headers: {
           'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
           'Access-Control-Allow-Credentials': true,
+          'Access-Control-Allow-Methods': 'OPTIONS, GET',
         },
       });
     }
@@ -108,7 +114,9 @@ export function imageprocess(event, context, callback) {
           'location': `${process.env.URL}/${generateS3Key(imageKey, size)}`,
           'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString(),
           'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
           'Access-Control-Allow-Credentials': true,
+          'Access-Control-Allow-Methods': 'OPTIONS, GET',
         },
         body: '' //buffer.toString()
       })
