@@ -13,6 +13,13 @@ const S3 = new _S3({
 
 const IMAGE_SIZES = [320, 640, 800, 1024, 1280, 1360, 1920, 2048, 2056, 2560, 3440, 3840, 'AUTO'];
 
+const defaultHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
+  'Access-Control-Allow-Credentials': true,
+  'Access-Control-Allow-Methods': 'OPTIONS, GET',
+}
+
 /**
  * Export `imageprocess` module.
  */
@@ -22,14 +29,13 @@ export function imageprocess(event, context, callback) {
   const queryParameters = event.queryStringParameters || {};
   const imageKey = decodeURIComponent(event.pathParameters.key);
 
-  console.log('imageKey', imageKey);
-
   if (!process.env.BUCKET) {
     let message = 'Error: Set environment variables BUCKET.';
     console.error(message);
     return callback(null, {
       statusCode: 404,
-      body: message
+      body: message,
+      headers: defaultHeaders
     });
   }
 
@@ -39,12 +45,7 @@ export function imageprocess(event, context, callback) {
     return callback(null, {
       statusCode: 404,
       body: message,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
-        'Access-Control-Allow-Credentials': true,
-        'Access-Control-Allow-Methods': 'OPTIONS, GET',
-      },
+      headers: defaultHeaders
     });
   }
 
@@ -62,12 +63,9 @@ export function imageprocess(event, context, callback) {
     const success = {
       statusCode: '308',
       headers: {
+        ...defaultHeaders,
         'location': `${process.env.URL}/${imageKey}`,
-        'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString(),
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
-        'Access-Control-Allow-Credentials': true,
-        'Access-Control-Allow-Methods': 'OPTIONS, GET',
+        'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString()
       },
       body: '' //buffer.toString()
     };
@@ -83,12 +81,7 @@ export function imageprocess(event, context, callback) {
       return callback(null, {
         statusCode: 403,
         body: 'Error: Invalid image size.',
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
-          'Access-Control-Allow-Credentials': true,
-          'Access-Control-Allow-Methods': 'OPTIONS, GET',
-        },
+        headers: defaultHeaders
       });
     }
 
@@ -106,22 +99,23 @@ export function imageprocess(event, context, callback) {
         Key: generateS3Key(imageKey, size),
         ACL: 'public-read',
         CacheControl: 'public, max-age=31536000'
-      }).promise()
-      )
-      .then(() => context.succeed({
-        statusCode: '308',
-        headers: {
-          'location': `${process.env.URL}/${generateS3Key(imageKey, size)}`,
-          'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString(),
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,Access-Control-Allow-Origin',
-          'Access-Control-Allow-Credentials': true,
-          'Access-Control-Allow-Methods': 'OPTIONS, GET',
-        },
-        body: '' //buffer.toString()
+      }).promise())
+      .then(() => {
+        let success = {
+          statusCode: '308',
+          headers: {
+            ...defaultHeaders,
+            'location': `${process.env.URL}/${generateS3Key(imageKey, size)}`,
+            'expires': (new Date((new Date()).setFullYear((new Date()).getFullYear() + 1))).toUTCString(),
+          },
+          body: '' //buffer.toString()
+        };
+        console.log('success resize', success);
+        context.succeed(success)
       })
-      )
-      .catch((err) => context.fail(err))
+      .catch((err) => {
+        context.fail(err)
+      })
 
   }
 

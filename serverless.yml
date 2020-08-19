@@ -47,7 +47,7 @@ provider:
   runtime: nodejs12.x
   region: us-east-1
   stage: ${opt:stage,'dev'}
-  timeout: 5 # optional, in seconds, default is 6
+  timeout: 6 # optional, in seconds, default is 6
   environment:
     BUCKET: ${file(env.yml):${self:provider.stage}.BUCKET}
     CDN_URL: ${file(env.yml):${self:provider.stage}.CDN_URL}
