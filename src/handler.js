@@ -71,8 +71,7 @@ export function imageprocess(event, context, callback) {
     };
 
     S3.getObject({ Bucket: process.env.BUCKET, Key: imageKey }).promise()
-      .then(() => context.succeed(success)
-      )
+      .then(() => context.succeed(success))
       .catch((err) => context.fail(err))
 
   } else {
